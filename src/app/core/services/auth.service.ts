@@ -1,75 +1,90 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-
+import { Observable, BehaviorSubject } from 'rxjs';
+import { tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
-import { VerifyOtpRequest } from '../models/auth/verify-otp-request';
-import { VerifyOtpResponse } from '../models/auth/verify-otp-response';
-import { LoginRequest } from '../models/auth/login-request';
-import { AuthResponse } from '../models/auth/auth-response';
-import { RegisterRequest } from '../models/auth/register-request';
-import { UserResponse } from '../models/auth/user-response';
-import { ForgotPasswordRequest } from '../models/auth/forgot-password-request';
-import { ResetPasswordRequest } from '../models/auth/reset-password-request';
+import {
+  User,
+  LoginRequest,
+  RegisterRequest,
+  AuthResponse,
+  UpdateProfileRequest,
+  ChangePasswordRequest,
+  ForgotPasswordRequest,
+  VerifyOtpRequest,
+  VerifyOtpResponse,
+  ResetPasswordRequest
+} from '../models/user.model';
+
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
+  private apiUrl = `${environment.apiUrl}/auth`;
+  private currentUserSubject = new BehaviorSubject<User | null>(this.getUserFromStorage());
+  public currentUser$ = this.currentUserSubject.asObservable();
 
-  private http = inject(HttpClient);
-
-  private readonly apiUrl = environment.apiUrl;
+  constructor(private http: HttpClient) {}
 
   login(request: LoginRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(
-      `${this.apiUrl}/auth/login`,
-      request
+    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, request).pipe(
+      tap(response => {
+        this.setToken(response.token);
+        this.setCurrentUser(response.user);
+      })
     );
   }
 
-  register(request: RegisterRequest): Observable<UserResponse> {
-    return this.http.post<UserResponse>(
-      `${this.apiUrl}/auth/register`,
-      request
+  register(request: RegisterRequest): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.apiUrl}/register`, request).pipe(
+      tap(response => {
+        this.setToken(response.token);
+        this.setCurrentUser(response.user);
+      })
     );
   }
 
-  forgotPassword(
-  request: ForgotPasswordRequest
-): Observable<string> {
+  forgotPassword(request: ForgotPasswordRequest): Observable<string> {
+    return this.http.post<string>(`${this.apiUrl}/forgotpassword`, request);
+  }
 
-  return this.http.post(
-    `${this.apiUrl}/auth/forgotpassword`,
-    request,
-    {
-      responseType: 'text'
-    }
-  );
-  
+  verifyOtp(request: VerifyOtpRequest): Observable<VerifyOtpResponse> {
+    return this.http.post<VerifyOtpResponse>(`${this.apiUrl}/verify-otp`, request);
+  }
 
-}
+  resetPassword(request: ResetPasswordRequest): Observable<string> {
+    return this.http.post<string>(`${this.apiUrl}/reset-password`, request);
+  }
 
-verifyOtp(
-  request: VerifyOtpRequest
-): Observable<VerifyOtpResponse> {
+  logout(): void {
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('user');
+    this.currentUserSubject.next(null);
+  }
 
-  return this.http.post<VerifyOtpResponse>(
-    `${this.apiUrl}/auth/verify-otp`,
-    request
-  );
-}
+  isAuthenticated(): boolean {
+    return !!this.getToken();
+  }
 
+  getToken(): string | null {
+    return localStorage.getItem('auth_token');
+  }
 
-resetPassword(
-  request: ResetPasswordRequest
-): Observable<string> {
+  private setToken(token: string): void {
+    localStorage.setItem('auth_token', token);
+  }
 
-  return this.http.post(
-    `${this.apiUrl}/auth/reset-password`,
-    request,
-    {
-      responseType: 'text'
-    }
-  );
-}
+  private getUserFromStorage(): User | null {
+    const user = localStorage.getItem('user');
+    return user ? JSON.parse(user) : null;
+  }
+
+  setCurrentUser(user: User): void {
+    localStorage.setItem('user', JSON.stringify(user));
+    this.currentUserSubject.next(user);
+  }
+
+  getCurrentUser(): User | null {
+    return this.currentUserSubject.value;
+  }
 }
