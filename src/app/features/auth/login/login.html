@@ -1,114 +1,54 @@
-<div class="login-page">
-
-  <div class="login-card">
-
-    <h1>Movie Booking System</h1>
-
-    <h2>Login</h2>
-
-    @if (errorMessage) {
-      <div class="error-message">
-        {{ errorMessage }}
-      </div>
-    }
-
-    @if (successMessage) {
-      <div class="success-message">
-        {{ successMessage }}
-      </div>
-    }
-
-    <form
-      [formGroup]="loginForm"
-      (ngSubmit)="onSubmit()"
-    >
-
-      <div class="form-group">
-
-        <label for="email">
-          Email
-        </label>
-
-        <input
-          id="email"
-          type="email"
-          formControlName="email"
-          placeholder="Enter your email"
-        >
-
-        @if (
-          loginForm.controls.email.touched &&
-          loginForm.controls.email.hasError('required')
-        ) {
-          <small class="field-error">
-            Email is required
-          </small>
-        }
-
-        @if (
-          loginForm.controls.email.touched &&
-          loginForm.controls.email.hasError('email')
-        ) {
-          <small class="field-error">
-            Please provide a valid email
-          </small>
-        }
-
-      </div>
-
-
-      <div class="form-group">
-
-        <label for="password">
-          Password
-        </label>
-
-        <input
-          id="password"
-          type="password"
-          formControlName="password"
-          placeholder="Enter your password"
-        >
-
-        @if (
-          loginForm.controls.password.touched &&
-          loginForm.controls.password.hasError('required')
-        ) {
-          <small class="field-error">
-            Password is required
-          </small>
-        }
-
-      </div>
-
-
-      <button
-        type="submit"
-        [disabled]="isLoading"
-      >
-
-        @if (isLoading) {
-          Logging in...
-        } @else {
-          Login
-        }
-
-      </button>
-
-
-      <div class="forgot-password-link">
-  <a routerLink="/forgot-password">
-    Forgot Password?
-  </a>
-</div>
-    </form>
-
-
-    <div class="register-link">
-  Don't have an account?
-  <a routerLink="/register">Register</a>
-</div>
-
+<div class="login-container">
+  <h2>Login</h2>
+  
+  <div *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
   </div>
 
+  <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+    <div class="form-group">
+      <label for="email">Email Address</label>
+      <input
+        type="email"
+        id="email"
+        formControlName="email"
+        class="form-control"
+        placeholder="your@email.com"
+        [disabled]="isLoading"
+      />
+      <div *ngIf="loginForm.get('email')?.hasError('required')" class="error-text">
+        Email is required
+      </div>
+      <div *ngIf="loginForm.get('email')?.hasError('email')" class="error-text">
+        Please enter a valid email
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="password">Password</label>
+      <input
+        type="password"
+        id="password"
+        formControlName="password"
+        class="form-control"
+        placeholder="••••••••"
+        [disabled]="isLoading"
+      />
+      <div *ngIf="loginForm.get('password')?.hasError('required')" class="error-text">
+        Password is required
+      </div>
+      <div *ngIf="loginForm.get('password')?.hasError('minlength')" class="error-text">
+        Password must be at least 6 characters
+      </div>
+    </div>
+
+    <button type="submit" class="btn-primary" [disabled]="isLoading || loginForm.invalid">
+      {{ isLoading ? 'Logging in...' : 'Login' }}
+    </button>
+  </form>
+
+  <div class="form-links">
+    <a routerLink="/forgot-password">Forgot Password?</a>
+    <p>Don't have an account? <a routerLink="/register">Register here</a></p>
+  </div>
 </div>

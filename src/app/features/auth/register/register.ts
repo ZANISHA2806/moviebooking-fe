@@ -1,124 +1,67 @@
-import { Component, inject } from '@angular/core';
-import {
-  FormBuilder,
-  ReactiveFormsModule,
-  Validators
-} from '@angular/forms';
-
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-
 import { AuthService } from '../../../core/services/auth.service';
+import { RegisterRequest } from '../../../core/models/user.model';
 
 @Component({
   selector: 'app-register',
-  imports: [
-    ReactiveFormsModule,
-    RouterLink
-  ],
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './register.html',
   styleUrl: './register.css'
 })
-export class Register {
-
-  private fb = inject(FormBuilder);
-  private authService = inject(AuthService);
-  private router = inject(Router);
-
+export class Register implements OnInit {
+  registerForm!: FormGroup;
   isLoading = false;
   errorMessage = '';
-  successMessage = '';
 
-  registerForm = this.fb.nonNullable.group({
+  constructor(
+    private fb: FormBuilder,
+    private authService: AuthService,
+    private router: Router
+  ) {}
 
-    firstName: [
-      '',
-      [
-        Validators.required,
-        Validators.maxLength(50)
-      ]
-    ],
+  ngOnInit(): void {
+    this.initializeForm();
+  }
 
-    lastName: [
-      '',
-      [
-        Validators.required,
-        Validators.maxLength(50)
-      ]
-    ],
-
-    email: [
-      '',
-      [
-        Validators.required,
-        Validators.email,
-        Validators.maxLength(150)
-      ]
-    ],
-
-    password: [
-      '',
-      [
-        Validators.required,
-        Validators.minLength(8),
-        Validators.maxLength(100)
-      ]
-    ],
-
-    phone: [
-      '',
-      [
-        Validators.required,
-        Validators.pattern(/^[0-9]{10}$/)
-      ]
-    ]
-
-  });
+  initializeForm(): void {
+    this.registerForm = this.fb.group({
+      firstName: ['', [Validators.required]],
+      lastName: ['', [Validators.required]],
+      email: ['', [Validators.required, Validators.email]],
+      phone: ['', [Validators.required]],
+      password: ['', [Validators.required, Validators.minLength(8)]],
+      confirmPassword: ['', [Validators.required]]
+    });
+  }
 
   onSubmit(): void {
-
-    this.errorMessage = '';
-    this.successMessage = '';
-
     if (this.registerForm.invalid) {
-      this.registerForm.markAllAsTouched();
+      this.errorMessage = 'Please fill in all required fields correctly';
+      return;
+    }
+
+    if (this.registerForm.value.password !== this.registerForm.value.confirmPassword) {
+      this.errorMessage = 'Passwords do not match';
       return;
     }
 
     this.isLoading = true;
+    this.errorMessage = '';
 
-    this.authService.register(
-      this.registerForm.getRawValue()
-    ).subscribe({
-
+    const { confirmPassword, ...request } = this.registerForm.value;
+    this.authService.register(request as RegisterRequest).subscribe({
       next: (response) => {
-
-        this.isLoading = false;
-
-        console.log('Registration response:', response);
-
-        this.successMessage =
-          'Registration successful! Redirecting to login...';
-
-        setTimeout(() => {
-          this.router.navigate(['/login']);
-        }, 1500);
+        this.authService.setCurrentUser(response.user);
+        this.router.navigate(['/dashboard']);
       },
-
       error: (error) => {
-
         this.isLoading = false;
-
-        console.error('Registration error:', error);
-
-        if (error.error?.message) {
-          this.errorMessage = error.error.message;
-        } else {
-          this.errorMessage =
-            'Registration failed. Please try again.';
-        }
+        this.errorMessage = error.error?.message || 'Registration failed. Please try again.';
       }
-
     });
   }
-
 }

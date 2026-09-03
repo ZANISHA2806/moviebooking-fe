@@ -1,106 +1,58 @@
-import { Component, inject } from '@angular/core';
-import {
-  FormBuilder,
-  ReactiveFormsModule,
-  Validators
-} from '@angular/forms';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-
 import { AuthService } from '../../../core/services/auth.service';
+import { LoginRequest } from '../../../core/models/user.model';
 
 @Component({
   selector: 'app-login',
-  imports: [ReactiveFormsModule,
-    RouterLink
-  ],
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './login.html',
   styleUrl: './login.css'
 })
-export class Login {
-
-  private fb = inject(FormBuilder);
-  private authService = inject(AuthService);
-  private router = inject(Router);
-
+export class Login implements OnInit {
+  loginForm!: FormGroup;
   isLoading = false;
   errorMessage = '';
-  successMessage = '';
 
-  loginForm = this.fb.nonNullable.group({
-    email: [
-      '',
-      [
-        Validators.required,
-        Validators.email,
-        Validators.maxLength(150)
-      ]
-    ],
+  constructor(
+    private fb: FormBuilder,
+    private authService: AuthService,
+    private router: Router
+  ) {}
 
-    password: [
-      '',
-      [
-        Validators.required
-      ]
-    ]
-  });
+  ngOnInit(): void {
+    this.initializeForm();
+  }
+
+  initializeForm(): void {
+    this.loginForm = this.fb.group({
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(6)]]
+    });
+  }
 
   onSubmit(): void {
-
-    this.errorMessage = '';
-    this.successMessage = '';
-
     if (this.loginForm.invalid) {
-      this.loginForm.markAllAsTouched();
+      this.errorMessage = 'Please fill in all required fields correctly';
       return;
     }
 
     this.isLoading = true;
+    this.errorMessage = '';
 
-    this.authService.login(this.loginForm.getRawValue())
-      .subscribe({
-
-        next: (response) => {
-
-  this.isLoading = false;
-
-  localStorage.setItem(
-    'accessToken',
-    response.accessToken
-  );
-
-  localStorage.setItem(
-    'tokenType',
-    response.tokenType
-  );
-
-  localStorage.setItem(
-    'user',
-    JSON.stringify(response.user)
-  );
-
-  this.successMessage =
-    `Welcome ${response.user.firstName}!`;
-
-  console.log('Login response:', response);
-
-  this.router.navigate(['/dashboard']);
-},
-
-        error: (error) => {
-
-          this.isLoading = false;
-
-          console.error('Login error:', error);
-
-          if (error.error?.message) {
-            this.errorMessage = error.error.message;
-          } else {
-            this.errorMessage =
-              'Login failed. Please check your email and password.';
-          }
-        }
-
-      });
+    const request: LoginRequest = this.loginForm.value;
+    this.authService.login(request).subscribe({
+      next: (response) => {
+        this.authService.setCurrentUser(response.user);
+        this.router.navigate(['/dashboard']);
+      },
+      error: (error) => {
+        this.isLoading = false;
+        this.errorMessage = error.error?.message || 'Login failed. Please try again.';
+      }
+    });
   }
-
 }
