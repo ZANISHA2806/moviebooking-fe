@@ -1,0 +1,237 @@
+<div class="register-page">
+
+  <div class="register-card">
+
+    <h1>Movie Booking System</h1>
+
+    <h2>Create Account</h2>
+
+    @if (errorMessage) {
+      <div class="error-message">
+        {{ errorMessage }}
+      </div>
+    }
+
+    @if (successMessage) {
+      <div class="success-message">
+        {{ successMessage }}
+      </div>
+    }
+
+    <form
+      [formGroup]="registerForm"
+      (ngSubmit)="onSubmit()"
+    >
+
+      <!-- FIRST NAME -->
+
+      <div class="form-group">
+
+        <label for="firstName">
+          First Name
+        </label>
+
+        <input
+          id="firstName"
+          type="text"
+          formControlName="firstName"
+          placeholder="Enter your first name"
+        >
+
+        @if (
+          registerForm.controls.firstName.touched &&
+          registerForm.controls.firstName.hasError('required')
+        ) {
+          <small class="field-error">
+            First name is required
+          </small>
+        }
+
+        @if (
+          registerForm.controls.firstName.touched &&
+          registerForm.controls.firstName.hasError('maxlength')
+        ) {
+          <small class="field-error">
+            First name must not exceed 50 characters
+          </small>
+        }
+
+      </div>
+
+
+      <!-- LAST NAME -->
+
+      <div class="form-group">
+
+        <label for="lastName">
+          Last Name
+        </label>
+
+        <input
+          id="lastName"
+          type="text"
+          formControlName="lastName"
+          placeholder="Enter your last name"
+        >
+
+        @if (
+          registerForm.controls.lastName.touched &&
+          registerForm.controls.lastName.hasError('required')
+        ) {
+          <small class="field-error">
+            Last name is required
+          </small>
+        }
+
+        @if (
+          registerForm.controls.lastName.touched &&
+          registerForm.controls.lastName.hasError('maxlength')
+        ) {
+          <small class="field-error">
+            Last name must not exceed 50 characters
+          </small>
+        }
+
+      </div>
+
+
+      <!-- EMAIL -->
+
+      <div class="form-group">
+
+        <label for="email">
+          Email
+        </label>
+
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          placeholder="Enter your email"
+        >
+
+        @if (
+          registerForm.controls.email.touched &&
+          registerForm.controls.email.hasError('required')
+        ) {
+          <small class="field-error">
+            Email is required
+          </small>
+        }
+
+        @if (
+          registerForm.controls.email.touched &&
+          registerForm.controls.email.hasError('email')
+        ) {
+          <small class="field-error">
+            Please provide a valid email
+          </small>
+        }
+
+      </div>
+
+
+      <!-- PASSWORD -->
+
+      <div class="form-group">
+
+        <label for="password">
+          Password
+        </label>
+
+        <input
+          id="password"
+          type="password"
+          formControlName="password"
+          placeholder="Enter your password"
+        >
+
+        @if (
+          registerForm.controls.password.touched &&
+          registerForm.controls.password.hasError('required')
+        ) {
+          <small class="field-error">
+            Password is required
+          </small>
+        }
+
+        @if (
+          registerForm.controls.password.touched &&
+          registerForm.controls.password.hasError('minlength')
+        ) {
+          <small class="field-error">
+            Password must be at least 8 characters
+          </small>
+        }
+
+      </div>
+
+
+      <!-- PHONE -->
+
+      <div class="form-group">
+
+        <label for="phone">
+          Phone Number
+        </label>
+
+        <input
+          id="phone"
+          type="tel"
+          formControlName="phone"
+          placeholder="Enter 10 digit phone number"
+          maxlength="10"
+        >
+
+        @if (
+          registerForm.controls.phone.touched &&
+          registerForm.controls.phone.hasError('required')
+        ) {
+          <small class="field-error">
+            Phone number is required
+          </small>
+        }
+
+        @if (
+          registerForm.controls.phone.touched &&
+          registerForm.controls.phone.hasError('pattern')
+        ) {
+          <small class="field-error">
+            Phone number must contain exactly 10 digits
+          </small>
+        }
+
+      </div>
+
+
+      <!-- SUBMIT -->
+
+      <button
+        type="submit"
+        [disabled]="isLoading"
+      >
+
+        @if (isLoading) {
+          Creating account...
+        } @else {
+          Register
+        }
+
+      </button>
+
+    </form>
+
+
+    <div class="login-link">
+
+      <span>Already have an account?</span>
+
+      <a routerLink="/login">
+        Login
+      </a>
+
+    </div>
+
+  </div>
+
+</div>

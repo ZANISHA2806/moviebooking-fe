@@ -1,0 +1,85 @@
+<div class="verify-otp-page">
+  <div class="verify-otp-card">
+
+    <h1>Movie Booking System</h1>
+
+    <h2>Verify OTP</h2>
+
+    <p class="description">
+      Enter the 6-digit OTP sent to your email address.
+    </p>
+
+    @if (email) {
+      <p class="email-display">
+        OTP sent to <strong>{{ email }}</strong>
+      </p>
+    }
+
+    @if (errorMessage) {
+      <div class="error-message">
+        {{ errorMessage }}
+      </div>
+    }
+
+    @if (successMessage) {
+      <div class="success-message">
+        {{ successMessage }}
+      </div>
+    }
+
+    <form [formGroup]="verifyOtpForm" (ngSubmit)="onSubmit()">
+
+      <div class="form-group">
+
+        <label for="otp">OTP</label>
+
+        <input
+          id="otp"
+          type="text"
+          inputmode="numeric"
+          maxlength="6"
+          formControlName="otp"
+          placeholder="Enter 6-digit OTP"
+        >
+
+        @if (
+          verifyOtpForm.controls.otp.touched &&
+          verifyOtpForm.controls.otp.hasError('required')
+        ) {
+          <small class="field-error">
+            OTP is required
+          </small>
+        }
+
+        @if (
+          verifyOtpForm.controls.otp.touched &&
+          verifyOtpForm.controls.otp.hasError('pattern')
+        ) {
+          <small class="field-error">
+            OTP must contain exactly 6 digits
+          </small>
+        }
+
+      </div>
+
+      <button
+        type="submit"
+        [disabled]="isLoading"
+      >
+        @if (isLoading) {
+          Verifying...
+        } @else {
+          Verify OTP
+        }
+      </button>
+
+    </form>
+
+    <div class="back-link">
+      <a routerLink="/forgot-password">
+        ← Back to Forgot Password
+      </a>
+    </div>
+
+  </div>
+</div>

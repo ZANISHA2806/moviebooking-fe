@@ -1,0 +1,200 @@
+<section class="movies-page">
+
+  <div class="page-header">
+
+    <div>
+      <h1>Movies</h1>
+      <p>Browse available movies</p>
+    </div>
+
+  </div>
+
+
+  <div class="filters">
+
+    <div class="search-box">
+
+      <input
+        type="text"
+        [(ngModel)]="searchTitle"
+        placeholder="Search movies by title"
+        (keyup.enter)="search()"
+      />
+
+      <button
+        type="button"
+        (click)="search()"
+      >
+        Search
+      </button>
+
+      @if (searchTitle) {
+
+        <button
+          type="button"
+          class="clear-button"
+          (click)="clearSearch()"
+        >
+          Clear
+        </button>
+
+      }
+
+    </div>
+
+
+    <div class="status-filter">
+
+      <label for="movieStatus">
+        Status
+      </label>
+
+      <select
+        id="movieStatus"
+        [(ngModel)]="selectedStatus"
+        (change)="filterByStatus()"
+      >
+
+        <option value="ALL">
+          All
+        </option>
+
+        <option [value]="MovieStatus.ACTIVE">
+          Active
+        </option>
+
+        <option [value]="MovieStatus.INACTIVE">
+          Inactive
+        </option>
+
+      </select>
+
+    </div>
+
+  </div>
+
+
+  @if (isLoading) {
+
+    <div class="loading">
+      Loading movies...
+    </div>
+
+  }
+
+
+  @if (errorMessage) {
+
+    <div class="error-message">
+      {{ errorMessage }}
+    </div>
+
+  }
+
+
+  @if (!isLoading && !errorMessage && movies.length === 0) {
+
+    <div class="empty-state">
+
+      <h2>No movies found</h2>
+
+      <p>
+        There are no movies matching your search.
+      </p>
+
+    </div>
+
+  }
+
+
+  @if (!isLoading && movies.length > 0) {
+
+    <div class="movie-grid">
+
+      @for (movie of movies; track movie.id) {
+
+        <article class="movie-card">
+
+          <div class="poster-container">
+
+            <img
+              [src]="getPosterUrl(movie)"
+              [alt]="movie.title"
+              class="movie-poster"
+              (error)="onImageError($event)"
+            />
+
+
+            <span
+              class="status-badge"
+              [class.active]="movie.status === MovieStatus.ACTIVE"
+              [class.inactive]="movie.status === MovieStatus.INACTIVE"
+            >
+              {{ movie.status }}
+            </span>
+
+          </div>
+
+
+          <div class="movie-content">
+
+            <h2>
+              {{ movie.title }}
+            </h2>
+
+
+            <p class="movie-description">
+              {{ movie.description }}
+            </p>
+
+
+            <div class="movie-details">
+
+              <span>
+                {{ movie.genre }}
+              </span>
+
+              <span>
+                {{ movie.language }}
+              </span>
+
+              <span>
+                {{ movie.durationMinutes }} min
+              </span>
+
+              <span>
+                {{ movie.certification }}
+              </span>
+
+            </div>
+
+
+            <div class="release-status">
+
+              @if (movie.displayStatus) {
+
+                <strong>
+                  {{ movie.displayStatus }}
+                </strong>
+
+              } @else {
+
+                <strong>
+                  {{ movie.releaseDate | date:'medium' }}
+                </strong>
+
+              }
+
+            </div>
+
+          </div>
+
+        </article>
+
+      }
+
+    </div>
+
+  }
+
+</section>

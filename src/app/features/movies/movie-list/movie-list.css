@@ -1,0 +1,187 @@
+.movies-page {
+  padding: 24px;
+}
+
+.page-header {
+  margin-bottom: 24px;
+}
+
+.page-header h1 {
+  margin: 0;
+  font-size: 28px;
+}
+
+.page-header p {
+  margin-top: 6px;
+  color: #666;
+}
+
+.filters {
+  display: flex;
+  gap: 16px;
+  align-items: end;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+
+.search-box {
+  display: flex;
+  gap: 8px;
+  flex: 1;
+  min-width: 280px;
+}
+
+.search-box input {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.search-box button,
+.status-filter select {
+  padding: 10px 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+}
+
+.search-box button {
+  background: #222;
+  color: white;
+  border-color: #222;
+}
+
+.search-box .clear-button {
+  background: white;
+  color: #222;
+}
+
+.status-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.status-filter label {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.movie-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 24px;
+}
+
+.movie-card {
+  overflow: hidden;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  background: white;
+}
+
+.poster-container {
+  position: relative;
+  height: 360px;
+  background: #eee;
+}
+
+.movie-poster {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.poster-placeholder {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #777;
+}
+
+.status-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 5px 9px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.status-badge.active {
+  background: #dff5e5;
+  color: #18753c;
+}
+
+.status-badge.inactive {
+  background: #eee;
+  color: #666;
+}
+
+.movie-content {
+  padding: 16px;
+}
+
+.movie-content h2 {
+  margin: 0 0 10px;
+  font-size: 20px;
+}
+
+.movie-description {
+  margin: 0 0 14px;
+  color: #666;
+  font-size: 14px;
+  line-height: 1.5;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.movie-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.movie-details span {
+  padding: 4px 7px;
+  background: #f3f3f3;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.release-status {
+  font-size: 13px;
+}
+
+.loading,
+.empty-state,
+.error-message {
+  padding: 32px;
+  text-align: center;
+}
+
+.error-message {
+  border: 1px solid #e0a0a0;
+  border-radius: 8px;
+  color: #a00000;
+  background: #fff5f5;
+}
+
+.empty-state {
+  border: 1px dashed #ccc;
+  border-radius: 8px;
+}
+
+.empty-state h2 {
+  margin-top: 0;
+}
