@@ -1,0 +1,73 @@
+<div class="confirmation-container">
+  <div *ngIf="isLoading" class="loading">
+    <p>Loading booking details...</p>
+  </div>
+
+  <div *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="booking" class="confirmation-card">
+    <div class="success-header" *ngIf="booking.status === 'CONFIRMED'">
+      <h1>✔ Booking Confirmed!</h1>
+      <p>Your movie tickets have been confirmed</p>
+    </div>
+
+    <div class="booking-details">
+      <div class="detail-section">
+        <h3>Booking Reference</h3>
+        <p class="reference">{{ booking.bookingReference }}</p>
+      </div>
+
+      <div class="detail-section">
+        <h3>Show Details</h3>
+        <div class="detail-item">
+          <label>Show ID</label>
+          <p>{{ booking.showId }}</p>
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <h3>Selected Seats</h3>
+        <div class="seats-grid">
+          <div *ngFor="let seat of booking.seats" class="seat-badge">
+            {{ seat.rowNumber }}{{ seat.seatNumber }}
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <h3>Price Summary</h3>
+        <div class="price-item">
+          <label>Total Amount</label>
+          <p class="price">RM {{ booking.totalPrice.toFixed(2) }}</p>
+        </div>
+        <div class="price-item">
+          <label>Payment Status</label>
+          <span class="payment-status" [ngClass]="booking.paymentStatus.toLowerCase()">
+            {{ booking.paymentStatus }}
+          </span>
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <h3>Booking Status</h3>
+        <div class="status-item">
+          <label>Status</label>
+          <span class="booking-status" [ngClass]="booking.status.toLowerCase()">
+            {{ booking.status }}
+          </span>
+        </div>
+        <div class="status-item">
+          <label>Booked On</label>
+          <p>{{ booking.bookingDate | date: 'MMM d, yyyy h:mm a' }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <a href="javascript:window.print()" class="btn-secondary">Print Ticket</a>
+      <a routerLink="/bookings" class="btn-primary">Back to Bookings</a>
+    </div>
+  </div>
+</div>
