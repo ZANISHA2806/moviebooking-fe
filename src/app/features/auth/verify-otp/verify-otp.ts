@@ -1,106 +1,70 @@
-import { Component, inject } from '@angular/core';
-import {
-  FormBuilder,
-  ReactiveFormsModule,
-  Validators
-} from '@angular/forms';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { VerifyOtpRequest } from '../../../core/models/user.model';
 
 @Component({
   selector: 'app-verify-otp',
-  imports: [ReactiveFormsModule, RouterLink],
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './verify-otp.html',
   styleUrl: './verify-otp.css'
 })
-export class VerifyOtp {
-
-  private fb = inject(FormBuilder);
-  private authService = inject(AuthService);
-  private route = inject(ActivatedRoute);
-  private router = inject(Router);
-
+export class VerifyOtp implements OnInit {
+  verifyForm!: FormGroup;
   isLoading = false;
   errorMessage = '';
-  successMessage = '';
-
   email = '';
 
-  verifyOtpForm = this.fb.nonNullable.group({
-    otp: [
-      '',
-      [
-        Validators.required,
-        Validators.pattern(/^[0-9]{6}$/)
-      ]
-    ]
-  });
+  constructor(
+    private fb: FormBuilder,
+    private authService: AuthService,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {}
 
   ngOnInit(): void {
-    this.email =
-      this.route.snapshot.queryParamMap.get('email') || '';
+    this.route.queryParams.subscribe(params => {
+      this.email = params['email'] || '';
+    });
+    this.initializeForm();
+  }
 
-    if (!this.email) {
-      this.router.navigate(['/forgot-password']);
-    }
+  initializeForm(): void {
+    this.verifyForm = this.fb.group({
+      otp: ['', [Validators.required, Validators.minLength(6)]]
+    });
   }
 
   onSubmit(): void {
-
-    this.errorMessage = '';
-    this.successMessage = '';
-
-    if (this.verifyOtpForm.invalid) {
-      this.verifyOtpForm.markAllAsTouched();
+    if (this.verifyForm.invalid || !this.email) {
+      this.errorMessage = 'Please enter a valid OTP';
       return;
     }
 
     this.isLoading = true;
+    this.errorMessage = '';
 
-    const request = {
+    const request: VerifyOtpRequest = {
       email: this.email,
-      otp: this.verifyOtpForm.controls.otp.value
+      otp: this.verifyForm.value.otp
     };
 
     this.authService.verifyOtp(request).subscribe({
       next: (response) => {
         this.isLoading = false;
-
-        this.successMessage =
-          response.message || 'OTP verified successfully.';
-
-        /*
-         * Keep the reset token only for this password-reset flow.
-         * sessionStorage is cleared when the browser session ends.
-         */
-        sessionStorage.setItem('resetEmail', this.email);
-        sessionStorage.setItem(
-          'resetToken',
-          response.resetToken
-        );
-
-        setTimeout(() => {
-          this.router.navigate(['/reset-password']);
-        }, 1000);
+        this.router.navigate(['/reset-password'], {
+          queryParams: {
+            email: this.email,
+            resetToken: response.resetToken
+          }
+        });
       },
-
       error: (error) => {
         this.isLoading = false;
-
-        console.error('Verify OTP error:', error);
-
-        if (error.error) {
-          if (typeof error.error === 'string') {
-            this.errorMessage = error.error;
-          } else {
-            this.errorMessage =
-              error.error.message || 'Invalid or expired OTP.';
-          }
-        } else {
-          this.errorMessage =
-            'Unable to verify OTP. Please try again.';
-        }
+        this.errorMessage = error.error?.message || 'Invalid OTP. Please try again.';
       }
     });
   }

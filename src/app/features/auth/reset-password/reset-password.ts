@@ -1,121 +1,75 @@
-import { Component, inject } from '@angular/core';
-import {
-  FormBuilder,
-  ReactiveFormsModule,
-  Validators
-} from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
-
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { ResetPasswordRequest } from '../../../core/models/user.model';
 
 @Component({
   selector: 'app-reset-password',
-  imports: [ReactiveFormsModule, RouterLink],
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './reset-password.html',
   styleUrl: './reset-password.css'
 })
-export class ResetPassword {
-
-  private fb = inject(FormBuilder);
-  private authService = inject(AuthService);
-  private router = inject(Router);
-
+export class ResetPassword implements OnInit {
+  resetForm!: FormGroup;
   isLoading = false;
   errorMessage = '';
-  successMessage = '';
-
   email = '';
   resetToken = '';
 
-  resetPasswordForm = this.fb.nonNullable.group({
-    newPassword: [
-      '',
-      [
-        Validators.required,
-        Validators.minLength(8),
-        Validators.maxLength(100)
-      ]
-    ],
-    confirmPassword: [
-      '',
-      [
-        Validators.required
-      ]
-    ]
-  });
+  constructor(
+    private fb: FormBuilder,
+    private authService: AuthService,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {}
 
   ngOnInit(): void {
-    this.email = sessionStorage.getItem('resetEmail') || '';
-    this.resetToken = sessionStorage.getItem('resetToken') || '';
+    this.route.queryParams.subscribe(params => {
+      this.email = params['email'] || '';
+      this.resetToken = params['resetToken'] || '';
+    });
+    this.initializeForm();
+  }
 
-    if (!this.email || !this.resetToken) {
-      this.router.navigate(['/forgot-password']);
-    }
+  initializeForm(): void {
+    this.resetForm = this.fb.group({
+      newPassword: ['', [Validators.required, Validators.minLength(8)]],
+      confirmPassword: ['', [Validators.required]]
+    });
   }
 
   onSubmit(): void {
-    this.errorMessage = '';
-    this.successMessage = '';
-
-    if (this.resetPasswordForm.invalid) {
-      this.resetPasswordForm.markAllAsTouched();
+    if (this.resetForm.invalid) {
+      this.errorMessage = 'Please fill in all fields correctly';
       return;
     }
 
-    const newPassword =
-      this.resetPasswordForm.controls.newPassword.value;
-
-    const confirmPassword =
-      this.resetPasswordForm.controls.confirmPassword.value;
-
-    if (newPassword !== confirmPassword) {
-      this.errorMessage =
-        'New password and confirm password must match.';
+    if (this.resetForm.value.newPassword !== this.resetForm.value.confirmPassword) {
+      this.errorMessage = 'Passwords do not match';
       return;
     }
 
     this.isLoading = true;
+    this.errorMessage = '';
 
-    const request = {
+    const request: ResetPasswordRequest = {
       email: this.email,
       resetToken: this.resetToken,
-      newPassword,
-      confirmPassword
+      newPassword: this.resetForm.value.newPassword
     };
 
     this.authService.resetPassword(request).subscribe({
-      next: (response) => {
+      next: () => {
         this.isLoading = false;
-
-        this.successMessage =
-          response || 'Password reset successfully.';
-
-        // Clear the temporary password-reset information.
-        sessionStorage.removeItem('resetEmail');
-        sessionStorage.removeItem('resetToken');
-
-        setTimeout(() => {
-          this.router.navigate(['/login']);
-        }, 1500);
+        alert('Password reset successfully! Please login with your new password.');
+        this.router.navigate(['/login']);
       },
-
       error: (error) => {
         this.isLoading = false;
-
-        console.error('Reset password error:', error);
-
-        if (error.error) {
-          if (typeof error.error === 'string') {
-            this.errorMessage = error.error;
-          } else {
-            this.errorMessage =
-              error.error.message ||
-              'Unable to reset password.';
-          }
-        } else {
-          this.errorMessage =
-            'Unable to reset password. Please try again.';
-        }
+        this.errorMessage = error.error?.message || 'Failed to reset password. Please try again.';
       }
     });
   }
