@@ -1,34 +1,24 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-
-import { Movie } from '../../../core/models/movies/movie';
 import { MovieService } from '../../../core/services/movie.service';
-import { MovieStatus } from '../../../core/models/movies/movie-status';
+import { Movie, MovieStatus } from '../../../core/models/movie.model';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-movie-list',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './movie-list.html',
   styleUrl: './movie-list.css'
 })
-export class MovieList {
-
-  private readonly movieService = inject(MovieService);
-
+export class MovieList implements OnInit {
   movies: Movie[] = [];
-  allMovies: Movie[] = [];
-
-  searchTitle = '';
-  selectedStatus: MovieStatus | 'ALL' = 'ALL';
-
   isLoading = false;
   errorMessage = '';
+  selectedStatus: MovieStatus | 'ALL' = 'ALL';
+  searchQuery = '';
 
-  readonly MovieStatus = MovieStatus;
-
-  readonly defaultPoster = 'assets/images/default-movie-poster.jpg';
+  constructor(private movieService: MovieService) {}
 
   ngOnInit(): void {
     this.loadMovies();
@@ -38,80 +28,55 @@ export class MovieList {
     this.isLoading = true;
     this.errorMessage = '';
 
-    this.movieService.getAllMovies().subscribe({
-      next: (movies) => {
-        this.allMovies = movies;
-        this.movies = movies;
-        this.isLoading = false;
-      },
-      error: (error) => {
-        this.isLoading = false;
-
-        this.errorMessage =
-          error?.error?.message ||
-          'Unable to load movies. Please try again.';
-      }
-    });
+    if (this.selectedStatus === 'ALL') {
+      this.movieService.getAllMovies().subscribe({
+        next: (data) => {
+          this.movies = data;
+          this.isLoading = false;
+        },
+        error: (error) => {
+          this.isLoading = false;
+          this.errorMessage = 'Failed to load movies';
+        }
+      });
+    } else {
+      this.movieService.getMoviesByStatus(this.selectedStatus).subscribe({
+        next: (data) => {
+          this.movies = data;
+          this.isLoading = false;
+        },
+        error: (error) => {
+          this.isLoading = false;
+          this.errorMessage = 'Failed to load movies';
+        }
+      });
+    }
   }
 
-  search(): void {
-    const title = this.searchTitle.trim();
-
-    if (!title) {
-      this.applyStatusFilter();
+  searchMovies(): void {
+    if (!this.searchQuery.trim()) {
+      this.loadMovies();
       return;
     }
 
     this.isLoading = true;
     this.errorMessage = '';
 
-    this.movieService.searchMovies(title).subscribe({
-      next: (movies) => {
-        this.allMovies = movies;
-        this.applyStatusFilter();
+    this.movieService.searchMovies(this.searchQuery).subscribe({
+      next: (data) => {
+        this.movies = data;
         this.isLoading = false;
       },
       error: (error) => {
         this.isLoading = false;
-
-        this.errorMessage =
-          error?.error?.message ||
-          'Unable to search movies. Please try again.';
+        this.errorMessage = 'Search failed';
       }
     });
   }
 
-  filterByStatus(): void {
-    this.applyStatusFilter();
-  }
-
-  private applyStatusFilter(): void {
-    if (this.selectedStatus === 'ALL') {
-      this.movies = this.allMovies;
-      return;
-    }
-
-    this.movies = this.allMovies.filter(
-      movie => movie.status === this.selectedStatus
-    );
-  }
-
-  clearSearch(): void {
-    this.searchTitle = '';
+  onStatusChange(status: MovieStatus | 'ALL'): void {
+    this.selectedStatus = status;
+    this.searchQuery = '';
     this.loadMovies();
-  }
-
-  getPosterUrl(movie: Movie): string {
-    return movie.posterUrl?.trim() || this.defaultPoster;
-  }
-
-  onImageError(event: Event): void {
-    const image = event.target as HTMLImageElement;
-
-    if (image.src.endsWith(this.defaultPoster)) {
-      return;
-    }
-
-    image.src = this.defaultPoster;
   }
 }
