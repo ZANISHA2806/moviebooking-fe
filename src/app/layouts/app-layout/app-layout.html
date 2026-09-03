@@ -1,1 +1,27 @@
-<router-outlet></router-outlet>
+<div class="app-layout">
+  <nav class="navbar">
+    <div class="navbar-container">
+      <div class="navbar-brand">
+        <h1>🎬 MovieBook</h1>
+      </div>
+      <button class="menu-toggle" (click)="toggleMenu()">
+        ☰
+      </button>
+      <div class="nav-menu" [class.active]="isMenuOpen">
+        <a routerLink="/dashboard" routerLinkActive="active">Home</a>
+        <a routerLink="/movies" routerLinkActive="active">Movies</a>
+        <a routerLink="/bookings" routerLinkActive="active">My Bookings</a>
+        <a routerLink="/profile" routerLinkActive="active">Profile</a>
+        <button class="logout-btn" (click)="logout()">Logout</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="main-content">
+    <router-outlet></router-outlet>
+  </main>
+
+  <footer class="footer">
+    <p>&copy; 2026 MovieBook. All rights reserved.</p>
+  </footer>
+</div>
