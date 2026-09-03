@@ -1,0 +1,129 @@
+<div class="profile-container">
+  <h2>User Profile</h2>
+
+  <div *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="successMessage" class="success-message">
+    {{ successMessage }}
+  </div>
+
+  <div class="tabs">
+    <button
+      [class.active]="activeTab === 'profile'"
+      (click)="activeTab = 'profile'"
+      class="tab-btn"
+    >
+      Profile
+    </button>
+    <button
+      [class.active]="activeTab === 'password'"
+      (click)="activeTab = 'password'"
+      class="tab-btn"
+    >
+      Change Password
+    </button>
+  </div>
+
+  <!-- Profile Tab -->
+  <div *ngIf="activeTab === 'profile'" class="tab-content">
+    <div class="profile-info">
+      <div class="info-group">
+        <label>Email</label>
+        <p>{{ user?.email }}</p>
+      </div>
+      <div class="info-group">
+        <label>Role</label>
+        <p>{{ user?.role }}</p>
+      </div>
+    </div>
+
+    <form [formGroup]="profileForm" (ngSubmit)="updateProfile()">
+      <div class="form-group">
+        <label for="firstName">First Name</label>
+        <input
+          type="text"
+          id="firstName"
+          formControlName="firstName"
+          class="form-control"
+          [disabled]="isLoadingProfile"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="lastName">Last Name</label>
+        <input
+          type="text"
+          id="lastName"
+          formControlName="lastName"
+          class="form-control"
+          [disabled]="isLoadingProfile"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="phone">Phone</label>
+        <input
+          type="tel"
+          id="phone"
+          formControlName="phone"
+          class="form-control"
+          [disabled]="isLoadingProfile"
+        />
+      </div>
+
+      <button type="submit" class="btn-primary" [disabled]="isLoadingProfile || profileForm.invalid">
+        {{ isLoadingProfile ? 'Updating...' : 'Update Profile' }}
+      </button>
+    </form>
+  </div>
+
+  <!-- Password Tab -->
+  <div *ngIf="activeTab === 'password'" class="tab-content">
+    <form [formGroup]="passwordForm" (ngSubmit)="changePassword()">
+      <div class="form-group">
+        <label for="currentPassword">Current Password</label>
+        <input
+          type="password"
+          id="currentPassword"
+          formControlName="currentPassword"
+          class="form-control"
+          placeholder="••••••••"
+          [disabled]="isLoadingPassword"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="newPassword">New Password</label>
+        <input
+          type="password"
+          id="newPassword"
+          formControlName="newPassword"
+          class="form-control"
+          placeholder="••••••••"
+          [disabled]="isLoadingPassword"
+        />
+        <div *ngIf="passwordForm.get('newPassword')?.hasError('minlength')" class="error-text">
+          Password must be at least 8 characters
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="confirmPassword">Confirm Password</label>
+        <input
+          type="password"
+          id="confirmPassword"
+          formControlName="confirmPassword"
+          class="form-control"
+          placeholder="••••••••"
+          [disabled]="isLoadingPassword"
+        />
+      </div>
+
+      <button type="submit" class="btn-primary" [disabled]="isLoadingPassword || passwordForm.invalid">
+        {{ isLoadingPassword ? 'Changing...' : 'Change Password' }}
+      </button>
+    </form>
+  </div>
+</div>
